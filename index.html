@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Resume Builder</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+</head>
+<body>
+    <header class="app-header">
+        <div class="container">
+            <div class="logo">
+                <h1>Smart Resume Builder</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#" class="active" data-section="editor">Editor</a></li>
+                    <li><a href="#" data-section="preview">Preview</a></li>
+                    <li><a href="#" data-section="templates">Templates</a></li>
+                </ul>
+            </nav>
+            <div class="user-actions">
+                <button id="save-btn" class="btn">Save</button>
+                <button id="export-btn" class="btn">Export PDF</button>
+
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="app-sections">
+            <!-- Editor Section -->
+            <section id="editor-section" class="active-section">
+                <div class="form-sections">
+                    <!-- Navigation Tabs -->
+                    <div class="tab-navigation">
+                        <button class="tab-btn active" data-tab="personal-info">Personal Info</button>
+                        <button class="tab-btn" data-tab="experience">Experience</button>
+                        <button class="tab-btn" data-tab="education">Education</button>
+                        <button class="tab-btn" data-tab="skills">Skills</button>
+                        <button class="tab-btn" data-tab="projects">Projects</button>
+                    </div>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content">
+                        <!-- Personal Info Tab -->
+                        <div id="personal-info" class="tab-pane active">
+                            <h2>Personal Information</h2>
+                            <div class="form-group">
+                                <div class="form-row">
+                                    <div class="form-field">
+                                        <label for="firstName">First Name</label>
+                                        <input type="text" id="firstName" placeholder="John">
+                                    </div>
+                                    <div class="form-field">
+                                        <label for="lastName">Last Name</label>
+                                        <input type="text" id="lastName" placeholder="Doe">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-field">
+                                        <label for="email">Email</label>
+                                        <input type="email" id="email" placeholder="john.doe@example.com">
+                                    </div>
+                                    <div class="form-field">
+                                        <label for="phone">Phone</label>
+                                        <input type="tel" id="phone" placeholder="(123) 456-7890">
+                                    </div>
+                                </div>
+                                <div class="form-field">
+                                    <label for="jobTitle">Job Title</label>
+                                    <input type="text" id="jobTitle" placeholder="Software Developer">
+                                </div>
+                                <div class="form-field">
+                                    <label for="location">Location</label>
+                                    <input type="text" id="location" placeholder="City, State">
+                                </div>
+                                <div class="form-field">
+                                    <label for="website">Website (Optional)</label>
+                                    <input type="url" id="website" placeholder="https://yourwebsite.com">
+                                </div>
+                                <div class="form-field">
+                                    <label for="summary">Professional Summary</label>
+                                    <textarea id="summary" rows="4" placeholder="Write a brief summary of your professional background and goals..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Experience Tab -->
+                        <div id="experience" class="tab-pane">
+                            <div class="section-header">
+                                <h2>Work Experience</h2>
+                                <button id="add-experience" class="btn btn-sm">
+                                    <span class="icon">+</span> Add Experience
+                                </button>
+                            </div>
+                            <p class="empty-message" id="empty-experience">No work experience entries yet. Click "Add Experience" to add your first entry.</p>
+                            <div id="experiences-container" class="sortable-list">
+                                <!-- Experience items will be added here dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Education Tab -->
+                        <div id="education" class="tab-pane">
+                            <div class="section-header">
+                                <h2>Education</h2>
+                                <button id="add-education" class="btn btn-sm">
+                                    <span class="icon">+</span> Add Education
+                                </button>
+                            </div>
+                            <p class="empty-message" id="empty-education">No education entries yet. Click "Add Education" to add your first entry.</p>
+                            <div id="education-container" class="sortable-list">
+                                <!-- Education items will be added here dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Skills Tab -->
+                        <div id="skills" class="tab-pane">
+                            <h2>Skills</h2>
+                            <div class="form-row skills-input">
+                                <input type="text" id="skill-input" placeholder="Add a skill (e.g., JavaScript, Project Management)">
+                                <button id="add-skill" class="btn">Add</button>
+                            </div>
+
+                            <!-- AI Suggestions -->
+                            <div id="ai-suggestions" class="ai-suggestions-container">
+                                <h3>
+                                    <span class="ai-icon">🧠</span>
+                                    AI Skill Suggestions
+                                </h3>
+                                <p id="suggestion-message">Enter your job title in the Personal Info section to get AI-powered skill suggestions.</p>
+                                <div id="suggestions-loading" class="loading-spinner hidden">Loading suggestions...</div>
+                                <div id="suggestion-badges" class="suggestion-badges"></div>
+                            </div>
+
+                            <h3>Your Skills</h3>
+                            <p class="empty-message" id="empty-skills">No skills added yet. Add skills to showcase your expertise.</p>
+                            <div id="skills-container" class="skills-grid">
+                                <!-- Skills will be added here dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Projects Tab -->
+                        <div id="projects" class="tab-pane">
+                            <div class="section-header">
+                                <h2>Projects</h2>
+                                <button id="add-project" class="btn btn-sm">
+                                    <span class="icon">+</span> Add Project
+                                </button>
+                            </div>
+                            <p class="empty-message" id="empty-projects">No projects added yet. Click "Add Project" to add your first project.</p>
+                            <div id="projects-container" class="sortable-list">
+                                <!-- Projects will be added here dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Preview Section -->
+            <section id="preview-section">
+                <div class="preview-container">
+                    <div class="preview-header">
+                        <h2>Resume Preview</h2>
+                        <div class="template-selector">
+                            <label for="template-select">Template:</label>
+                            <select id="template-select">
+                                <option value="professional">Professional</option>
+                                <option value="modern">Modern</option>
+                                <option value="creative">Creative</option>
+                                <option value="simple">Simple</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="resume-preview" class="resume-preview">
+                        <!-- Resume preview will be rendered here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Templates Section -->
+            <section id="templates-section">
+                <h2>Select a Template</h2>
+                <div class="templates-grid">
+                    <div class="template-card" data-template="professional">
+                        <div class="template-preview professional-preview"></div>
+                        <h3>Professional</h3>
+                        <p>A clean, traditional layout perfect for corporate applications.</p>
+                        <button class="btn btn-select-template">Select</button>
+                    </div>
+                    <div class="template-card" data-template="modern">
+                        <div class="template-preview modern-preview"></div>
+                        <h3>Modern</h3>
+                        <p>A sleek design with contemporary styling and layout.</p>
+                        <button class="btn btn-select-template">Select</button>
+                    </div>
+                    <div class="template-card" data-template="creative">
+                        <div class="template-preview creative-preview"></div>
+                        <h3>Creative</h3>
+                        <p>A bold, colorful design ideal for creative professionals.</p>
+                        <button class="btn btn-select-template">Select</button>
+                    </div>
+                    <div class="template-card" data-template="simple">
+                        <div class="template-preview simple-preview"></div>
+                        <h3>Simple</h3>
+                        <p>A minimalist design focusing on clarity and readability.</p>
+                        <button class="btn btn-select-template">Select</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Modal Templates -->
+    <div id="modal-overlay" class="modal-overlay hidden">
+        <!-- Skill Level Edit Modal -->
+        <div id="skill-edit-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="edit-skill-title">Edit Skill Level</h3>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="slider-container">
+                        <div class="slider-labels">
+                            <span>Beginner</span>
+                            <span>Intermediate</span>
+                            <span>Advanced</span>
+                            <span>Expert</span>
+                        </div>
+                        <input type="range" id="skill-level-slider" min="1" max="100" value="50" class="slider">
+                        <div class="slider-value" id="skill-level-value">Intermediate</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" id="cancel-skill-edit">Cancel</button>
+                    <button class="btn btn-primary" id="save-skill-edit">Save Changes</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Date Picker Modal -->
+        <div id="date-picker-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="date-picker-title">Select Date</h3>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="date-picker">
+                        <div class="month-selector">
+                            <select id="month-select">
+                                <option value="1">January</option>
+                                <option value="2">February</option>
+                                <option value="3">March</option>
+                                <option value="4">April</option>
+                                <option value="5">May</option>
+                                <option value="6">June</option>
+                                <option value="7">July</option>
+                                <option value="8">August</option>
+                                <option value="9">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                            <select id="year-select"></select>
+                        </div>
+                    </div>
+                    <div id="present-option" class="present-option">
+                        <button class="btn" id="set-as-present">Set as "Present"</button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" id="cancel-date-picker">Cancel</button>
+                    <button class="btn btn-primary" id="save-date-picker">Select</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Templates for dynamic content -->
+    <template id="experience-item-template">
+        <div class="card experience-item">
+            <div class="card-drag-handle">
+                <span class="drag-icon">⋮⋮</span>
+            </div>
+            <div class="card-header">
+                <h3 class="experience-title">Experience Entry</h3>
+                <div class="card-actions">
+                    <button class="btn-icon delete-experience">
+                        <span class="icon-trash">🗑️</span>
+                    </button>
+                    <button class="btn-icon toggle-expand">
+                        <span class="icon-expand">▼</span>
+                    </button>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="form-row">
+                    <div class="form-field">
+                        <label>Position/Title</label>
+                        <input type="text" class="position-input" placeholder="Software Engineer">
+                    </div>
+                    <div class="form-field">
+                        <label>Company</label>
+                        <input type="text" class="company-input" placeholder="Acme Inc.">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label>Start Date</label>
+                        <button class="date-picker-btn start-date-btn">
+                            <span class="calendar-icon">📅</span>
+                            <span class="date-text">Select Date</span>
+                        </button>
+                    </div>
+                    <div class="form-field">
+                        <label>End Date</label>
+                        <button class="date-picker-btn end-date-btn">
+                            <span class="calendar-icon">📅</span>
+                            <span class="date-text">Select Date</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label>Location</label>
+                    <input type="text" class="location-input" placeholder="City, State or Remote">
+                </div>
+                <div class="form-field">
+                    <label>Description</label>
+                    <textarea class="description-input" rows="3" placeholder="Describe your role and responsibilities"></textarea>
+                </div>
+                <div class="form-field achievements-section">
+                    <label>Key Achievements</label>
+                    <div class="achievements-container">
+                        <p class="empty-achievements">No achievements added yet</p>
+                    </div>
+                    <div class="achievement-input-group">
+                        <input type="text" class="achievement-input" placeholder="Add key achievement or accomplishment">
+                        <button class="btn add-achievement">Add</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="education-item-template">
+        <div class="card education-item">
+            <div class="card-drag-handle">
+                <span class="drag-icon">⋮⋮</span>
+            </div>
+            <div class="card-header">
+                <h3 class="education-title">Education Entry</h3>
+                <div class="card-actions">
+                    <button class="btn-icon delete-education">
+                        <span class="icon-trash">🗑️</span>
+                    </button>
+                    <button class="btn-icon toggle-expand">
+                        <span class="icon-expand">▼</span>
+                    </button>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="form-field">
+                    <label>School/University</label>
+                    <input type="text" class="school-input" placeholder="University of Example">
+                </div>
+                <div class="form-field">
+                    <label>Degree</label>
+                    <input type="text" class="degree-input" placeholder="Bachelor of Science">
+                </div>
+                <div class="form-field">
+                    <label>Field of Study</label>
+                    <input type="text" class="field-input" placeholder="Computer Science">
+                </div>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label>Start Date</label>
+                        <button class="date-picker-btn edu-start-date-btn">
+                            <span class="calendar-icon">📅</span>
+                            <span class="date-text">Select Date</span>
+                        </button>
+                    </div>
+                    <div class="form-field">
+                        <label>End Date</label>
+                        <button class="date-picker-btn edu-end-date-btn">
+                            <span class="calendar-icon">📅</span>
+                            <span class="date-text">Select Date</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label>Location</label>
+                    <input type="text" class="edu-location-input" placeholder="City, State">
+                </div>
+                <div class="form-field">
+                    <label>Description (Optional)</label>
+                    <textarea class="edu-description-input" rows="2" placeholder="Honors, activities, or relevant details"></textarea>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="skill-item-template">
+        <div class="skill-card">
+            <div class="skill-info">
+                <h3 class="skill-name"></h3>
+                <p class="skill-level">Intermediate</p>
+            </div>
+            <div class="skill-actions">
+                <button class="btn-icon edit-skill" title="Edit skill level">
+                    <span class="icon-edit">📊</span>
+                </button>
+                <button class="btn-icon delete-skill" title="Remove skill">
+                    <span class="icon-delete">✕</span>
+                </button>
+            </div>
+        </div>
+    </template>
+
+    <template id="project-item-template">
+        <div class="card project-item">
+            <div class="card-drag-handle">
+                <span class="drag-icon">⋮⋮</span>
+            </div>
+            <div class="card-header">
+                <h3 class="project-title">Project Entry</h3>
+                <div class="card-actions">
+                    <button class="btn-icon delete-project">
+                        <span class="icon-trash">🗑️</span>
+                    </button>
+                    <button class="btn-icon toggle-expand">
+                        <span class="icon-expand">▼</span>
+                    </button>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="form-field">
+                    <label>Project Name</label>
+                    <input type="text" class="project-name-input" placeholder="My Awesome Project">
+                </div>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label>Start Date</label>
+                        <button class="date-picker-btn project-start-date-btn">
+                            <span class="calendar-icon">📅</span>
+                            <span class="date-text">Select Date</span>
+                        </button>
+                    </div>
+                    <div class="form-field">
+                        <label>End Date</label>
+                        <button class="date-picker-btn project-end-date-btn">
+                            <span class="calendar-icon">📅</span>
+                            <span class="date-text">Select Date</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label>Project URL (Optional)</label>
+                    <input type="url" class="project-url-input" placeholder="https://myproject.com">
+                </div>
+                <div class="form-field">
+                    <label>Description</label>
+                    <textarea class="project-description-input" rows="3" placeholder="Describe the project, technologies used, and your role"></textarea>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="achievement-badge-template">
+        <div class="achievement-badge">
+            <span class="achievement-text"></span>
+            <button class="delete-achievement">✕</button>
+        </div>
+    </template>
+
+    <template id="skill-suggestion-template">
+        <div class="suggestion-badge">
+            <span class="suggestion-text"></span>
+            <span class="add-suggestion">+</span>
+        </div>
+    </template>
+
+    <script src="app.js"></script>
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+</html>
